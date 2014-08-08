@@ -1,6 +1,11 @@
 SwipeToDismissUndoList
 =======================
 
+This library has been modified to work exclusively with ExpandableListView instead of AbsListView. This allows the OnDismiss callback to return the group and 
+child positions from the swiped item (thus simplifying the code when used).
+
+When a group item is swiped, the childPos value in OnDismiss will be -1.
+
 _**This library is deprecated in favor of [EnhancedListView](https://github.com/timroes/EnhancedListView). I won't fix any bugs on this library anymore.**_
 
 The SwipeToDismissUndoList is a library to add swipe to dismiss functionality to
@@ -15,6 +20,8 @@ The source code of this demonstration app can be found in the [SwipteToDismissUn
 
 Changes
 -------
+
+*2014-08-07* Changed AbsListView to ExpandableListView for specific application.
 
 *2013-05-28* Introduced `setSwipeDirection` and improved detection of swipes.
 
