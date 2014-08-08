@@ -59,9 +59,9 @@ You must implement that, to handle the deletion of elements:
 
 ```java
 SwipeDismissList.OnDismissCallback callback = new SwipeDismissList.OnDismissCallback() {
-	public SwipeDismissList.Undoable onDismiss(ListView listView, int position) {
+	public SwipeDismissList.Undoable onDismiss(ExpandableListView listView, int groupPosition, int childPosition) {
 		// Delete the item from your adapter (sample code):
-		final String itemToDelete = mAdapter.get(position);
+		final String itemToDelete = mAdapter.get(groupPosition, childPosition);
 		mAdapter.remove(itemToDelete);
 		return null;
 	}
@@ -74,14 +74,14 @@ at least its `undo` method), that restores the element again:
 
 ```java
 SwipeDismissList.OnDismissCallback callback = new SwipeDismissList.OnDismissCallback() {
-	public SwipeDismissList.Undoable onDismiss(AbsListView listView, final int position) {
+	public SwipeDismissList.Undoable onDismiss(ExpandableListView listView, int groupPosition, int childPosition) {
 		// Delete the item from your adapter (sample code):
-		final String itemToDelete = mAdapter.get(position);
+		final String itemToDelete = mAdapter.get(groupPosition, childPosition);
 		mAdapter.remove(itemToDelete);
 		return new SwipeDismissList.Undoable() {
 			public void undo() {
 				// Return the item at its previous position again
-				mAdapter.insert(itemToDelete, position);
+				mAdapter.insert(itemToDelete, groupPosition, childPosition);
 			}
 		};
 	}
@@ -116,9 +116,9 @@ An (pseudo) example of a complete `OnDismissCallback`:
 ```java
 SwipeDismissList.OnDismissCallback callback = new SwipeDismissList.OnDismissCallback() {
 	// Gets called whenever the user deletes an item.
-	public SwipeDismissList.Undoable onDismiss(AbsListView listView, final int position) {
+	public SwipeDismissList.Undoable onDismiss(ExpandableListView listView, final int groupPosition, final int childPosition) {
 		// Get your item from the adapter (mAdapter being an adapter for MyItem objects)
-		final MyItem deletedItem = mAdapter.getItem(position);
+		final MyItem deletedItem = mAdapter.getItem(groupPosition, childPosition);
 		// Delete item from adapter
 		mAdapter.remove(deletedItem);
 		// Return an Undoable implementing every method
@@ -127,7 +127,7 @@ SwipeDismissList.OnDismissCallback callback = new SwipeDismissList.OnDismissCall
 			// Method is called when user undoes this deletion
 			public void undo() {
 				// Reinsert item to list
-				mAdapter.insert(deletedItem, position)
+				mAdapter.insert(deletedItem, groupPosition, childPosition)
 			}
 			
 			// Return an undo message for that item
