@@ -29,6 +29,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.Button;
+import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -64,7 +65,7 @@ public final class SwipeDismissList implements View.OnTouchListener {
 	private long mAnimationTime;
 	
 	// Fixed properties
-	private AbsListView mListView;
+	private ExpandableListView mListView;
 	private OnDismissCallback mCallback;
 	private int mViewWidth = 1; // 1 and not 0 to prevent dividing by zero
 	
@@ -128,7 +129,7 @@ public final class SwipeDismissList implements View.OnTouchListener {
 	
 	/**
 	 * Defines the direction in which the swipe to delete can be done. The default
-	 * is {@link SwipeDirection#BOTH}. Use {@link #setSwipeDirection(de.timroes.swipetodismiss.SwipeDismissList.SwipeDirection)}
+	 * is {@link SwipeDirection#BOTH}. Use {@link #setSwipeDirection(SwipeDismissList.SwipeDirection)}
 	 * to set the direction.
 	 */
 	public enum SwipeDirection {
@@ -165,14 +166,15 @@ public final class SwipeDismissList implements View.OnTouchListener {
 		 * or more list item positions.
 		 *
 		 * @param listView The originating {@link ListView}.
-		 * @param position The position of the item to dismiss.
+		 * @param groupPosition The position of the group item to dismiss.
+         * @param childPosition The position of the child item to dismiss
 		 */
-		Undoable onDismiss(AbsListView listView, int position);
+		Undoable onDismiss(ExpandableListView listView, int groupPosition, int childPosition);
 	}
 
 	/**
 	 * An implementation of this abstract class must be returned by the 
-	 * {@link OnDismissCallback#onDismiss(android.widget.ListView, int)} method,
+	 * {@link OnDismissCallback#onDismiss(android.widget.ExpandableListView, int, int)} method,
 	 * if the user should be able to undo that dismiss. If the action will be undone
 	 * by the user {@link #undo()} will be called. That method should undo the previous
 	 * deletion of the item and add it back to the adapter. Read the README file for
@@ -212,7 +214,7 @@ public final class SwipeDismissList implements View.OnTouchListener {
 	 * @param callback The callback to trigger when the user has indicated that
 	 * she would like to dismiss one or more list items.
 	 */
-	public SwipeDismissList(AbsListView listView, OnDismissCallback callback) {
+	public SwipeDismissList(ExpandableListView listView, OnDismissCallback callback) {
 		this(listView, callback, UndoMode.SINGLE_UNDO);
 	}
 
@@ -224,7 +226,7 @@ public final class SwipeDismissList implements View.OnTouchListener {
 	 * she would like to dismiss one or more list items.
 	 * @param mode The mode this list handles multiple undos.
 	 */
-	public SwipeDismissList(AbsListView listView, OnDismissCallback callback, UndoMode mode) {
+	public SwipeDismissList(ExpandableListView listView, OnDismissCallback callback, UndoMode mode) {
 
 		if(listView == null) {
 			throw new IllegalArgumentException("listview must not be null.");
@@ -533,7 +535,7 @@ public final class SwipeDismissList implements View.OnTouchListener {
 	/**
 	 * Checks whether the delta of a swipe indicates, that the swipe is in the
 	 * correct direction, regarding the direction set via
-	 * {@link #setSwipeDirection(de.timroes.swipetodismiss.SwipeDismissList.SwipeDirection)}
+	 * {@link #setSwipeDirection(SwipeDismissList.SwipeDirection)}
 	 *
 	 * @param deltaX The delta of x coordinate of the swipe.
 	 * @return Whether the delta of a swipe is in the right direction.
@@ -602,7 +604,11 @@ public final class SwipeDismissList implements View.OnTouchListener {
 							}
 							mUndoActions.clear();
 						}
-						Undoable undoable = mCallback.onDismiss(mListView, dismiss.position);
+                        // Convert dismiss position to group and child positions
+                        long pos = mListView.getExpandableListPosition(dismiss.position);
+                        int groupPos = mListView.getPackedPositionGroup(pos);
+                        int childPos = mListView.getPackedPositionChild(pos);
+						Undoable undoable = mCallback.onDismiss(mListView, groupPos, childPos);
 						if(undoable != null) {
 							mUndoActions.add(undoable);
 						}
